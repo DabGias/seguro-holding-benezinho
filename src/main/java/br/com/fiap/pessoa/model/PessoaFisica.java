@@ -23,7 +23,12 @@ public class PessoaFisica extends Pessoa {
     @Enumerated(EnumType.STRING)
     private Sexo sexo;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(
+            fetch = FetchType.EAGER,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            })
     @JoinTable(
             name = "TB_FILHOS",
             joinColumns = {

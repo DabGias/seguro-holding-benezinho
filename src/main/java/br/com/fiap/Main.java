@@ -17,13 +17,10 @@ import java.util.List;
 import java.util.Random;
 
 public class Main {
+    final static EntityManagerFactory FACTORY = Persistence.createEntityManagerFactory("oracle");
+    final static EntityManager MANAGER = FACTORY.createEntityManager();
+
     public static void main(String[] args) {
-
-
-        EntityManagerFactory factory = Persistence.createEntityManagerFactory("oracle");
-        EntityManager manager = factory.createEntityManager();
-
-
         var bruno = new PessoaFisica();
         bruno.setCPF(geraCpf())
                 .setSexo(Sexo.MASCULINO)
@@ -70,7 +67,8 @@ public class Main {
                 .setContratante(bruno)
                 .setCorretor(corretor)
                 .setInicioVigencia(LocalDate.now())
-                .setFimVigencia(LocalDate.now().plusYears(1));
+                .setFimVigencia(LocalDate.now().plusYears(1))
+                .addBeneficiario(bene);
 
         var imovel = new Imovel();
         imovel.setQtdBanheiros(3)
@@ -83,22 +81,24 @@ public class Main {
                 .setContratante(bene)
                 .setCorretor(corretor)
                 .setInicioVigencia(LocalDate.now())
-                .setFimVigencia(LocalDate.now().plusYears(1));
+                .setFimVigencia(LocalDate.now().plusYears(1))
+                .addBeneficiario(bene);
 
         var svida = new SeguroVida();
         svida.setObjeto(esposa)
                 .setContratante(bene)
                 .setCorretor(corretor)
                 .setInicioVigencia(LocalDate.now())
-                .setFimVigencia(LocalDate.now().plusYears(1));
+                .setFimVigencia(LocalDate.now().plusYears(1))
+                .addBeneficiario(bene);
 
 
         List<Seguro> seguros = Arrays.asList(svida, sv, sr);
 
         try {
-            manager.getTransaction().begin();
-            seguros.forEach(manager::persist);
-            manager.getTransaction().commit();
+            MANAGER.getTransaction().begin();
+            seguros.forEach(MANAGER::persist);
+            MANAGER.getTransaction().commit();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null,
                     """
@@ -115,10 +115,13 @@ public class Main {
 
         //Métodos para consultar aqui:
 
+        System.out.println(findAll());
+        System.out.println(findById(1L));
+
         seguros.forEach(System.out::println);
 
-        manager.close();
-        factory.close();
+        MANAGER.close();
+        FACTORY.close();
 
     }
 
@@ -135,6 +138,7 @@ public class Main {
         var digito = sorteio.nextLong(99);
         var numero = sorteio.nextLong(999999999);
         var cpf = String.valueOf(numero) + "/0001-" + String.valueOf(digito);
+
         return cpf;
     }
 
@@ -144,4 +148,7 @@ public class Main {
         return String.valueOf(numero);
     }
 
+    private static List<?> findAll() { return MANAGER.createQuery("From Seguro").getResultList(); }
+
+    private static Seguro findById(Long id) { return MANAGER.find(Seguro.class, id); }
 }
